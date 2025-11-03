@@ -87,7 +87,7 @@ func _play_sine_tone(audio_player: AudioStreamPlayer3D, frequency: float, durati
     var phase := 0.0
     
     var frames_available := playback.get_frames_available()
-    var frames_to_push := min(frames_to_fill, frames_available)
+    var frames_to_push: int = min(frames_to_fill, frames_available)
     for _i in range(frames_to_push):
         var sample_value := sin(phase) * amplitude
         playback.push_frame(Vector2(sample_value, sample_value))
