@@ -1,0 +1,40 @@
+[gd_scene load_steps=4 format=3 uid="uid://blvmx3vxqdwob"]
+
+[ext_resource type="Script" path="res://scripts/player_controller.gd" id="1_player"]
+[ext_resource type="Script" path="res://scripts/audio_manager.gd" id="2_audio"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+radius = 0.4
+height = 1.8
+
+[node name="Player" type="CharacterBody3D" groups=["player"]]
+script = ExtResource("1_player")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_1")
+
+[node name="CameraMount" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+
+[node name="Camera3D" type="Camera3D" parent="CameraMount"]
+fov = 90.0
+
+[node name="AudioManager" type="Node3D" parent="."]
+script = ExtResource("2_audio")
+
+[node name="FootstepPlayer" type="AudioStreamPlayer3D" parent="AudioManager"]
+volume_db = -8.0
+max_distance = 10.0
+
+[node name="JumpPlayer" type="AudioStreamPlayer3D" parent="AudioManager"]
+volume_db = -6.0
+max_distance = 12.0
+
+[node name="LandingPlayer" type="AudioStreamPlayer3D" parent="AudioManager"]
+volume_db = -4.0
+max_distance = 12.0
+
+[node name="SprintPlayer" type="AudioStreamPlayer3D" parent="AudioManager"]
+volume_db = -12.0
+max_distance = 8.0
