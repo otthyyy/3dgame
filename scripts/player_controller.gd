@@ -15,6 +15,7 @@ extends CharacterBody3D
 @export var gravity: float = 20.0
 @export var coyote_time: float = 0.125
 @export var jump_buffer_time: float = 0.1
+@export var hard_landing_velocity_threshold: float = 10.0
 
 @export_group("Camera Parameters")
 @export var mouse_sensitivity: float = 0.3
@@ -43,6 +44,8 @@ var base_camera_pos: Vector3
 var respawn_transform: Transform3D
 @export var fall_respawn_height: float = -15.0
 var head_bob_enabled: bool = true
+var was_on_floor: bool = false
+var landing_state_initialized: bool = false
 
 var telemetry := {
     "sprint_time": 0.0,
@@ -53,7 +56,7 @@ var telemetry := {
 var previous_position: Vector3
 
 signal jumped
-signal landed
+signal landed(was_hard_landing: bool)
 signal sprint_started
 signal sprint_stopped
 
@@ -77,6 +80,7 @@ func _ready() -> void:
     previous_position = global_position
     mouse_sensitivity = GameState.mouse_sensitivity
     head_bob_enabled = GameState.head_bob_enabled
+    was_on_floor = is_on_floor()
 
 func _input(event: InputEvent) -> void:
     if GameState.paused:
@@ -89,11 +93,24 @@ func _physics_process(delta: float) -> void:
     if GameState.paused:
         return
     
+    var was_on_floor_before := was_on_floor
+    
     _update_grounding(delta)
     _handle_jump_input(delta)
     _handle_movement(delta)
     _update_camera(delta)
+    
+    var vertical_velocity_before_move := velocity.y
     move_and_slide()
+    
+    var is_on_floor_now := is_on_floor()
+    if landing_state_initialized and not was_on_floor_before and is_on_floor_now:
+        var impact_speed := abs(vertical_velocity_before_move) if vertical_velocity_before_move < 0.0 else 0.0
+        var was_hard_landing := impact_speed > hard_landing_velocity_threshold
+        emit_signal("landed", was_hard_landing)
+    
+    was_on_floor = is_on_floor_now
+    landing_state_initialized = true
     
     if global_position.y < fall_respawn_height:
         respawn()
@@ -236,9 +253,11 @@ func respawn() -> void:
     pitch = 0.0
     yaw = 0.0
     previous_position = global_position
+    was_on_floor = false
+    landing_state_initialized = false
 
-func set_checkpoint(transform: Transform3D) -> void:
-    respawn_transform = transform
+func set_checkpoint(checkpoint_transform: Transform3D) -> void:
+    respawn_transform = checkpoint_transform
 
 func is_sprinting_active() -> bool:
     return is_sprinting
