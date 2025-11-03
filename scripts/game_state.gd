@@ -68,5 +68,7 @@ func request_quit() -> void:
     get_tree().quit()
 
 func _update_master_volume() -> void:
-    var db_value := lerp(-40.0, 0.0, master_volume)
-    AudioServer.set_bus_volume_db(0, db_value)
+    var clamped_volume: float = clamp(master_volume, VOLUME_RANGE.x, VOLUME_RANGE.y)
+    var db_value: float = lerp(-40.0, 0.0, clamped_volume)
+    var master_bus_index: int = AudioServer.get_bus_index("Master")
+    AudioServer.set_bus_volume_db(master_bus_index, db_value)
