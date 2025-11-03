@@ -105,7 +105,9 @@ func _physics_process(delta: float) -> void:
     
     var is_on_floor_now := is_on_floor()
     if landing_state_initialized and not was_on_floor_before and is_on_floor_now:
-        var impact_speed := abs(vertical_velocity_before_move) if vertical_velocity_before_move < 0.0 else 0.0
+        var impact_speed: float = 0.0
+        if vertical_velocity_before_move < 0.0:
+            impact_speed = abs(vertical_velocity_before_move)
         var was_hard_landing: bool = impact_speed > hard_landing_velocity_threshold
         emit_signal("landed", was_hard_landing)
     
